@@ -2,38 +2,42 @@ package src
 
 import (
 	"wizards/config"
+	"wizards/libs/engine"
 	"wizards/src/entities"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
-	player       *entities.Player
-	staff        *entities.Staff
-	enemyManager *entities.EnemyManager
+	sceneManager *engine.SceneManager
 }
 
 func NewGame() *Game {
-	game := &Game{}
+	sceneManager := engine.NewSceneManager()
 
-	game.player = entities.NewPlayer(config.ScreenWidth/2, config.ScreenHeight/2)
-	game.enemyManager = entities.NewEnemyManager(game.player)
-	game.staff = entities.NewStaff(game.player, game.enemyManager)
+	player := entities.NewPlayer(sceneManager, config.ScreenWidth/2, config.ScreenHeight/2)
+	sceneManager.AddEntity(player)
+
+	enemyManager := entities.NewEnemyManager(sceneManager)
+	sceneManager.AddEntity(enemyManager)
+
+	staff := entities.NewStaff(sceneManager)
+	sceneManager.AddEntity(staff)
+
+	game := &Game{
+		sceneManager: sceneManager,
+	}
 
 	return game
 }
 
 func (g *Game) Update() error {
-	g.player.Update()
-	g.staff.Update()
-	g.enemyManager.Update()
+	g.sceneManager.Update()
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	g.player.Draw(screen)
-	g.staff.Draw(screen)
-	g.enemyManager.Draw(screen)
+	g.sceneManager.Draw(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

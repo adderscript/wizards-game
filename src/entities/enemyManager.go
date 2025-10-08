@@ -1,43 +1,47 @@
 package entities
 
 import (
+	"log"
+
 	"wizards/config"
 	"wizards/libs"
+	"wizards/libs/engine"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type EnemyManager struct {
+	Tag string
+
 	Enemies           []*Enemy
 	spawnDelaySeconds float64
 	spawnTimer        float64
 	spawnOffset       float64
 
-	player *Player
+	sceneManager *engine.SceneManager
+	player       *Player
 }
 
-func NewEnemyManager(player *Player) *EnemyManager {
-	enemyMamager := &EnemyManager{
+func NewEnemyManager(sceneManager *engine.SceneManager) *EnemyManager {
+	player, ok := sceneManager.GetEntity("player").(*Player)
+	if !ok {
+		log.Fatal("entity 'player' is not of type Player")
+	}
+
+	enemyManager := &EnemyManager{
+		Tag: "enemyManager",
+
 		spawnDelaySeconds: 2.0,
 		spawnOffset:       10.0,
 
-		player: player,
+		sceneManager: sceneManager,
+		player:       player,
 	}
 
-	return enemyMamager
+	return enemyManager
 }
 
 func (em *EnemyManager) Update() {
-	// update all enemies
-	for i := len(em.Enemies) - 1; i >= 0; i-- {
-		enemy := em.Enemies[i]
-
-		enemy.Update()
-		if enemy.ShouldRemove {
-			em.Enemies = append(em.Enemies[:i], em.Enemies[i+1:]...)
-		}
-	}
-
 	// spawn enemy every spawnDelaySeconds
 	if em.spawnTimer >= em.spawnDelaySeconds {
 		em.spawnEnemy()
@@ -47,12 +51,7 @@ func (em *EnemyManager) Update() {
 	}
 }
 
-func (em *EnemyManager) Draw(screen *ebiten.Image) {
-	// draw all enemies
-	for _, enemy := range em.Enemies {
-		enemy.Draw(screen)
-	}
-}
+func (em *EnemyManager) Draw(screen *ebiten.Image) {}
 
 func (em *EnemyManager) spawnEnemy() {
 	// set initial position
@@ -74,5 +73,9 @@ func (em *EnemyManager) spawnEnemy() {
 	}
 
 	enemy := NewEnemy(enemyX, enemyY, em.player)
-	em.Enemies = append(em.Enemies, enemy)
+	em.sceneManager.AddEntity(enemy)
+}
+
+func (em *EnemyManager) GetTag() string {
+	return em.Tag
 }

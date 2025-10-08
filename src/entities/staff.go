@@ -3,14 +3,14 @@ package entities
 import (
 	"log"
 	"math"
+	"wizards/libs/engine"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Staff struct {
-	player  *Player
-	bullets []*Bullet
+	Tag string
 
 	X, Y          float64
 	Width, Height float64
@@ -20,16 +20,28 @@ type Staff struct {
 	offsetX, offsetY float64
 	rotationOffset   float64
 
+	bullets    []*Bullet
 	shootDelay float64
 	shootTimer float64
 
 	sprite         *ebiten.Image
 	spriteRotation float64
 
+	sceneManager *engine.SceneManager
+	player       *Player
 	enemyManager *EnemyManager
 }
 
-func NewStaff(player *Player, enemyManager *EnemyManager) *Staff {
+func NewStaff(sceneManager *engine.SceneManager) *Staff {
+	player, ok := sceneManager.GetEntity("player").(*Player)
+	if !ok {
+		log.Fatal("entity 'player' is not of type Player")
+	}
+	enemyManager, ok := sceneManager.GetEntity("enemyManager").(*EnemyManager)
+	if !ok {
+		log.Fatal("entity 'enemyManager' is not of type EnemyManager")
+	}
+
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/staff.png")
 	if err != nil {
@@ -37,7 +49,7 @@ func NewStaff(player *Player, enemyManager *EnemyManager) *Staff {
 	}
 
 	staff := &Staff{
-		player: player,
+		Tag: "staff",
 
 		X: player.X, Y: player.Y,
 		Width: 1.0, Height: 1.0,
@@ -50,6 +62,8 @@ func NewStaff(player *Player, enemyManager *EnemyManager) *Staff {
 
 		sprite: img,
 
+		sceneManager: sceneManager,
+		player:       player,
 		enemyManager: enemyManager,
 	}
 
@@ -75,16 +89,6 @@ func (s *Staff) Update() {
 	} else {
 		s.shootTimer += 1.0 / 60.0
 	}
-
-	// update all bullets
-	for i := len(s.bullets) - 1; i >= 0; i-- {
-		bullet := s.bullets[i]
-
-		bullet.Update()
-		if bullet.ShouldRemove {
-			s.bullets = append(s.bullets[:i], s.bullets[i+1:]...)
-		}
-	}
 }
 
 func (s *Staff) Draw(screen *ebiten.Image) {
@@ -97,16 +101,13 @@ func (s *Staff) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(s.X, s.Y)
 
 	screen.DrawImage(s.sprite, op)
-
-	// draw all bullets
-	for _, bullet := range s.bullets {
-		bullet.Draw(screen)
-	}
-
-	println(len(s.bullets))
 }
 
 func (s *Staff) shoot() {
-	bullet := NewBullet(s.X, s.Y, s.Rotation, s.enemyManager)
-	s.bullets = append(s.bullets, bullet)
+	bullet := NewBullet(s.sceneManager, s.X, s.Y, s.Rotation)
+	s.sceneManager.AddEntity(bullet)
+}
+
+func (s *Staff) GetTag() string {
+	return s.Tag
 }

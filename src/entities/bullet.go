@@ -5,13 +5,15 @@ import (
 	"math"
 
 	"wizards/config"
-	"wizards/libs/collision"
+	"wizards/libs/engine"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
 
 type Bullet struct {
+	Tag string
+
 	X, Y          float64
 	Width, Height float64
 	Rotation      float64
@@ -19,16 +21,16 @@ type Bullet struct {
 	speed      float64
 	velX, velY float64
 
-	Collider    *collision.CircleCollider
+	Collider    *engine.CircleCollider
 	isColliding bool
 
 	sprite *ebiten.Image
 
-	enemyManager *EnemyManager
-	ShouldRemove bool
+	sceneManager *engine.SceneManager
 }
 
-func NewBullet(x, y, rotation float64, enemyManager *EnemyManager) *Bullet {
+func NewBullet(sceneManager *engine.SceneManager, x, y, rotation float64) *Bullet {
+
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/bullet.png")
 	if err != nil {
@@ -36,17 +38,19 @@ func NewBullet(x, y, rotation float64, enemyManager *EnemyManager) *Bullet {
 	}
 
 	bullet := &Bullet{
+		Tag: "bullet",
+
 		X: x, Y: y,
 		Width: 1.0, Height: 1.0,
 		Rotation: rotation,
 
-		speed: 3.5,
+		speed: 2.5,
 
-		Collider: collision.NewCircleCollider(x, y, 1.5),
+		Collider: engine.NewCircleCollider(x, y, 1.5),
 
 		sprite: img,
 
-		enemyManager: enemyManager,
+		sceneManager: sceneManager,
 	}
 
 	return bullet
@@ -60,17 +64,21 @@ func (b *Bullet) Update() {
 	// delete if off screen
 	if (b.X <= -config.ScreenOffset || b.X >= config.ScreenWidth+config.ScreenOffset) ||
 		(b.Y <= -config.ScreenOffset || b.Y >= config.ScreenHeight+config.ScreenOffset) {
-		b.ShouldRemove = true
+		b.sceneManager.DeleteEntity(b)
 	}
 
 	// check collision
 	b.Collider.Move(b.X, b.Y)
-	enemies := b.enemyManager.Enemies
-	for i := len(enemies) - 1; i >= 0; i-- {
-		enemy := enemies[i]
-		if collision.CheckCollisionCircles(*enemy.Collider, *b.Collider) {
-			enemy.ShouldRemove = true
-			b.ShouldRemove = true
+	enemies := b.sceneManager.GetEntities("enemy")
+	for _, entity := range enemies {
+		enemy, ok := entity.(*Enemy)
+		if !ok {
+			continue
+		}
+		if engine.CheckCollisionCircles(*enemy.Collider, *b.Collider) {
+			b.sceneManager.DeleteEntity(enemy)
+			b.sceneManager.DeleteEntity(b)
+			break
 		}
 	}
 }
@@ -84,4 +92,8 @@ func (b *Bullet) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(b.X, b.Y)
 
 	screen.DrawImage(b.sprite, op)
+}
+
+func (b *Bullet) GetTag() string {
+	return b.Tag
 }
