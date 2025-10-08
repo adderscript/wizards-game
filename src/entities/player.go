@@ -3,6 +3,8 @@ package entities
 import (
 	"log"
 
+	"wizards/libs/collision"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 )
@@ -13,6 +15,8 @@ type Player struct {
 
 	velX, velY float64
 	speed      float64
+
+	Collider *collision.CircleCollider
 
 	sprite     *ebiten.Image
 	facingLeft bool
@@ -30,6 +34,8 @@ func NewPlayer(x, y float64) *Player {
 		Width: 1.0, Height: 1.0,
 
 		speed: 1.0,
+
+		Collider: collision.NewCircleCollider(x, y, 3.0),
 
 		sprite:     img,
 		facingLeft: false,
@@ -64,6 +70,8 @@ func (p *Player) Update() {
 	} else if dirX < 0.0 {
 		p.facingLeft = false
 	}
+
+	p.Collider.Move(p.X, p.Y)
 }
 
 func (p *Player) Draw(screen *ebiten.Image) {
@@ -82,4 +90,9 @@ func (p *Player) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(p.X, p.Y)
 
 	screen.DrawImage(p.sprite, op)
+}
+
+func (p *Player) TakeDamage(amount int) {
+	p.X = 0
+	p.Y = 0
 }

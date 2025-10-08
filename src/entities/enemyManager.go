@@ -1,23 +1,22 @@
-package managers
+package entities
 
 import (
 	"wizards/config"
 	"wizards/libs"
-	"wizards/src/entities"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type EnemyManager struct {
-	enemies           []*entities.Enemy
+	Enemies           []*Enemy
 	spawnDelaySeconds float64
 	spawnTimer        float64
 	spawnOffset       float64
 
-	player *entities.Player
+	player *Player
 }
 
-func NewEnemyManager(player *entities.Player) *EnemyManager {
+func NewEnemyManager(player *Player) *EnemyManager {
 	enemyMamager := &EnemyManager{
 		spawnDelaySeconds: 2.0,
 		spawnOffset:       10.0,
@@ -30,12 +29,12 @@ func NewEnemyManager(player *entities.Player) *EnemyManager {
 
 func (em *EnemyManager) Update() {
 	// update all enemies
-	for i := len(em.enemies) - 1; i >= 0; i-- {
-		enemy := em.enemies[i]
+	for i := len(em.Enemies) - 1; i >= 0; i-- {
+		enemy := em.Enemies[i]
 
 		enemy.Update()
 		if enemy.ShouldRemove {
-			em.enemies = append(em.enemies[:i], em.enemies[i+1:]...)
+			em.Enemies = append(em.Enemies[:i], em.Enemies[i+1:]...)
 		}
 	}
 
@@ -50,7 +49,7 @@ func (em *EnemyManager) Update() {
 
 func (em *EnemyManager) Draw(screen *ebiten.Image) {
 	// draw all enemies
-	for _, enemy := range em.enemies {
+	for _, enemy := range em.Enemies {
 		enemy.Draw(screen)
 	}
 }
@@ -74,6 +73,6 @@ func (em *EnemyManager) spawnEnemy() {
 		enemyY = config.ScreenHeight + config.ScreenOffset
 	}
 
-	enemy := entities.NewEnemy(enemyX, enemyY, em.player)
-	em.enemies = append(em.enemies, enemy)
+	enemy := NewEnemy(enemyX, enemyY, em.player)
+	em.Enemies = append(em.Enemies, enemy)
 }

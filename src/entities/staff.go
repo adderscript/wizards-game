@@ -25,9 +25,11 @@ type Staff struct {
 
 	sprite         *ebiten.Image
 	spriteRotation float64
+
+	enemyManager *EnemyManager
 }
 
-func NewStaff(player *Player) *Staff {
+func NewStaff(player *Player, enemyManager *EnemyManager) *Staff {
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/staff.png")
 	if err != nil {
@@ -47,6 +49,8 @@ func NewStaff(player *Player) *Staff {
 		shootDelay: 0.25,
 
 		sprite: img,
+
+		enemyManager: enemyManager,
 	}
 
 	return staff
@@ -103,6 +107,6 @@ func (s *Staff) Draw(screen *ebiten.Image) {
 }
 
 func (s *Staff) shoot() {
-	bullet := NewBullet(s.X, s.Y, s.Rotation)
+	bullet := NewBullet(s.X, s.Y, s.Rotation, s.enemyManager)
 	s.bullets = append(s.bullets, bullet)
 }

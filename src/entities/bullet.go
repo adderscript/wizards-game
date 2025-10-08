@@ -1,12 +1,11 @@
 package entities
 
 import (
-	"image/color"
 	"log"
 	"math"
 
 	"wizards/config"
-	"wizards/libs"
+	"wizards/libs/collision"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -20,14 +19,16 @@ type Bullet struct {
 	speed      float64
 	velX, velY float64
 
-	Collider *libs.CircleCollider
+	Collider    *collision.CircleCollider
+	isColliding bool
 
 	sprite *ebiten.Image
 
+	enemyManager *EnemyManager
 	ShouldRemove bool
 }
 
-func NewBullet(x, y, rotation float64) *Bullet {
+func NewBullet(x, y, rotation float64, enemyManager *EnemyManager) *Bullet {
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/bullet.png")
 	if err != nil {
@@ -41,9 +42,11 @@ func NewBullet(x, y, rotation float64) *Bullet {
 
 		speed: 3.5,
 
-		Collider: libs.NewCircleCollider(x, y, 2.5),
+		Collider: collision.NewCircleCollider(x, y, 1.5),
 
 		sprite: img,
+
+		enemyManager: enemyManager,
 	}
 
 	return bullet
@@ -60,7 +63,16 @@ func (b *Bullet) Update() {
 		b.ShouldRemove = true
 	}
 
+	// check collision
 	b.Collider.Move(b.X, b.Y)
+	enemies := b.enemyManager.Enemies
+	for i := len(enemies) - 1; i >= 0; i-- {
+		enemy := enemies[i]
+		if collision.CheckCollisionCircles(*enemy.Collider, *b.Collider) {
+			enemy.ShouldRemove = true
+			b.ShouldRemove = true
+		}
+	}
 }
 
 func (b *Bullet) Draw(screen *ebiten.Image) {
@@ -72,6 +84,4 @@ func (b *Bullet) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(b.X, b.Y)
 
 	screen.DrawImage(b.sprite, op)
-
-	b.Collider.Draw(screen, color.White)
 }

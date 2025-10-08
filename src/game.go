@@ -3,7 +3,6 @@ package src
 import (
 	"wizards/config"
 	"wizards/src/entities"
-	"wizards/src/managers"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -11,15 +10,15 @@ import (
 type Game struct {
 	player       *entities.Player
 	staff        *entities.Staff
-	enemyManager *managers.EnemyManager
+	enemyManager *entities.EnemyManager
 }
 
 func NewGame() *Game {
 	game := &Game{}
 
 	game.player = entities.NewPlayer(config.ScreenWidth/2, config.ScreenHeight/2)
-	game.staff = entities.NewStaff(game.player)
-	game.enemyManager = managers.NewEnemyManager(game.player)
+	game.enemyManager = entities.NewEnemyManager(game.player)
+	game.staff = entities.NewStaff(game.player, game.enemyManager)
 
 	return game
 }
