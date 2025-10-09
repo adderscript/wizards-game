@@ -27,11 +27,16 @@ type Enemy struct {
 
 	Collider *engine.CircleCollider
 
+	sceneManager *engine.SceneManager
 	player       *Player
-	ShouldRemove bool
 }
 
-func NewEnemy(x, y float64, player *Player) *Enemy {
+func NewEnemy(sceneManager *engine.SceneManager, x, y float64) *Enemy {
+	player, ok := sceneManager.GetEntity("player").(*Player)
+	if !ok {
+		log.Fatal("entity 'player' is not of type Player")
+	}
+
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/enemy.png")
 	if err != nil {
@@ -52,7 +57,8 @@ func NewEnemy(x, y float64, player *Player) *Enemy {
 
 		Collider: engine.NewCircleCollider(x, y, 5.0),
 
-		player: player,
+		sceneManager: sceneManager,
+		player:       player,
 	}
 
 	enemy.Health = enemy.maxHealth
@@ -70,6 +76,11 @@ func (e *Enemy) Update() {
 	e.Collider.Move(e.X, e.Y)
 	if engine.CheckCollisionCircles(*e.Collider, *e.player.Collider) {
 		e.player.TakeDamage(1)
+	}
+
+	// check if health is depleted
+	if e.Health <= 0 {
+		e.sceneManager.DeleteEntity(e)
 	}
 }
 
@@ -89,6 +100,10 @@ func (e *Enemy) Draw(screen *ebiten.Image) {
 	op.GeoM.Translate(e.X, e.Y)
 
 	screen.DrawImage(e.sprite, op)
+}
+
+func (e *Enemy) TakeDamage(amount int) {
+	e.Health -= amount
 }
 
 func (e *Enemy) GetTag() string {

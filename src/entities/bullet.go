@@ -21,6 +21,8 @@ type Bullet struct {
 	speed      float64
 	velX, velY float64
 
+	damage int
+
 	Collider    *engine.CircleCollider
 	isColliding bool
 
@@ -45,6 +47,8 @@ func NewBullet(sceneManager *engine.SceneManager, x, y, rotation float64) *Bulle
 		Rotation: rotation,
 
 		speed: 2.5,
+
+		damage: 1,
 
 		Collider: engine.NewCircleCollider(x, y, 1.5),
 
@@ -76,7 +80,7 @@ func (b *Bullet) Update() {
 			continue
 		}
 		if engine.CheckCollisionCircles(*enemy.Collider, *b.Collider) {
-			b.sceneManager.DeleteEntity(enemy)
+			enemy.TakeDamage(b.damage)
 			b.sceneManager.DeleteEntity(b)
 			break
 		}

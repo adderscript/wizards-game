@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"wizards/libs/engine"
+	"wizards/libs/engine/components"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,22 +13,22 @@ import (
 type Player struct {
 	Tag string
 
-	X, Y          float64
-	Width, Height float64
+	components.Transform
 
 	velX, velY float64
 	speed      float64
 
-	Health    int
-	maxHealth int
+	components.HealthManager
 
 	Collider *engine.CircleCollider
 
 	sprite     *ebiten.Image
 	facingLeft bool
+
+	sceneManager *engine.SceneManager
 }
 
-func NewPlayer(enemyManager *engine.SceneManager, x, y float64) *Player {
+func NewPlayer(sceneManager *engine.SceneManager, x, y float64) *Player {
 	// load image
 	img, _, err := ebitenutil.NewImageFromFile("assets/player.png")
 	if err != nil {
@@ -37,18 +38,23 @@ func NewPlayer(enemyManager *engine.SceneManager, x, y float64) *Player {
 	player := &Player{
 		Tag: "player",
 
-		X: x, Y: y,
-		Width: 1.0, Height: 1.0,
+		Transform: components.NewTransform(
+			x, y,
+			1.0, 1.0,
+			0.0,
+		),
 
 		speed: 1.0,
+
+		HealthManager: components.NewHealthManager(3.0),
 
 		Collider: engine.NewCircleCollider(x, y, 3.0),
 
 		sprite:     img,
 		facingLeft: false,
-	}
 
-	player.Health = player.maxHealth
+		sceneManager: sceneManager,
+	}
 
 	return player
 }
@@ -80,11 +86,6 @@ func (p *Player) Update() {
 		p.facingLeft = false
 	}
 
-	// check if health is depleated
-	if p.Health <= 0 {
-
-	}
-
 	p.Collider.Move(p.X, p.Y)
 }
 
@@ -110,7 +111,7 @@ func (p *Player) GetTag() string {
 	return p.Tag
 }
 
-func (p *Player) TakeDamage(amount int) {
+func (p *Player) TakeDamage(amount float64) {
 	p.Health -= amount
 	println(p.Health)
 }

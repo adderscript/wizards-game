@@ -1,8 +1,6 @@
 package entities
 
 import (
-	"log"
-
 	"wizards/config"
 	"wizards/libs"
 	"wizards/libs/engine"
@@ -23,11 +21,6 @@ type EnemyManager struct {
 }
 
 func NewEnemyManager(sceneManager *engine.SceneManager) *EnemyManager {
-	player, ok := sceneManager.GetEntity("player").(*Player)
-	if !ok {
-		log.Fatal("entity 'player' is not of type Player")
-	}
-
 	enemyManager := &EnemyManager{
 		Tag: "enemyManager",
 
@@ -35,7 +28,6 @@ func NewEnemyManager(sceneManager *engine.SceneManager) *EnemyManager {
 		spawnOffset:       10.0,
 
 		sceneManager: sceneManager,
-		player:       player,
 	}
 
 	return enemyManager
@@ -72,7 +64,7 @@ func (em *EnemyManager) spawnEnemy() {
 		enemyY = config.ScreenHeight + config.ScreenOffset
 	}
 
-	enemy := NewEnemy(enemyX, enemyY, em.player)
+	enemy := NewEnemy(em.sceneManager, enemyX, enemyY)
 	em.sceneManager.AddEntity(enemy)
 }
 
