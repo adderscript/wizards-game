@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"wizards/src"
+	"wizards/src/game"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -11,7 +11,7 @@ import (
 func main() {
 	ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle("Hello, World!")
-	if err := ebiten.RunGame(src.NewGame()); err != nil {
+	if err := ebiten.RunGame(game.New()); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -13,12 +13,12 @@ import (
 type Player struct {
 	Tag string
 
-	components.Transform
+	*components.Transform
 
 	velX, velY float64
 	speed      float64
 
-	components.HealthManager
+	*components.HealthManager
 
 	Collider *engine.CircleCollider
 
@@ -113,5 +113,4 @@ func (p *Player) GetTag() string {
 
 func (p *Player) TakeDamage(amount float64) {
 	p.Health -= amount
-	println(p.Health)
 }

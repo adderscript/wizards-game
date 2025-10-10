@@ -5,8 +5,8 @@ type HealthManager struct {
 	Health    float64
 }
 
-func NewHealthManager(maxHealth float64) HealthManager {
-	health := HealthManager{
+func NewHealthManager(maxHealth float64) *HealthManager {
+	health := &HealthManager{
 		MaxHealth: maxHealth,
 		Health:    maxHealth,
 	}

@@ -6,6 +6,7 @@ import (
 
 	"wizards/config"
 	"wizards/libs/engine"
+	"wizards/libs/engine/components"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -14,14 +15,12 @@ import (
 type Bullet struct {
 	Tag string
 
-	X, Y          float64
-	Width, Height float64
-	Rotation      float64
+	*components.Transform
 
 	speed      float64
 	velX, velY float64
 
-	damage int
+	damage float64
 
 	Collider    *engine.CircleCollider
 	isColliding bool
@@ -42,13 +41,15 @@ func NewBullet(sceneManager *engine.SceneManager, x, y, rotation float64) *Bulle
 	bullet := &Bullet{
 		Tag: "bullet",
 
-		X: x, Y: y,
-		Width: 1.0, Height: 1.0,
-		Rotation: rotation,
+		Transform: components.NewTransform(
+			x, y,
+			1.0, 1.0,
+			rotation,
+		),
 
 		speed: 2.5,
 
-		damage: 1,
+		damage: 1.0,
 
 		Collider: engine.NewCircleCollider(x, y, 1.5),
 

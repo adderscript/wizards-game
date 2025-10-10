@@ -5,6 +5,7 @@ import (
 
 	"wizards/libs"
 	"wizards/libs/engine"
+	"wizards/libs/engine/components"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -13,14 +14,12 @@ import (
 type Enemy struct {
 	Tag string
 
-	X, Y          float64
-	Width, Height float64
+	*components.Transform
 
 	velX, velY float64
 	speed      float64
 
-	Health    int
-	maxHealth int
+	*components.HealthManager
 
 	sprite     *ebiten.Image
 	facingLeft bool
@@ -46,12 +45,15 @@ func NewEnemy(sceneManager *engine.SceneManager, x, y float64) *Enemy {
 	enemy := &Enemy{
 		Tag: "enemy",
 
-		X: x, Y: y,
-		Width: 1.0, Height: 1.0,
+		Transform: components.NewTransform(
+			x, y,
+			1.0, 1.0,
+			0.0,
+		),
 
 		speed: 0.75,
 
-		maxHealth: 2,
+		HealthManager: components.NewHealthManager(2.0),
 
 		sprite: img,
 
@@ -60,8 +62,6 @@ func NewEnemy(sceneManager *engine.SceneManager, x, y float64) *Enemy {
 		sceneManager: sceneManager,
 		player:       player,
 	}
-
-	enemy.Health = enemy.maxHealth
 
 	return enemy
 }
@@ -102,7 +102,7 @@ func (e *Enemy) Draw(screen *ebiten.Image) {
 	screen.DrawImage(e.sprite, op)
 }
 
-func (e *Enemy) TakeDamage(amount int) {
+func (e *Enemy) TakeDamage(amount float64) {
 	e.Health -= amount
 }
 

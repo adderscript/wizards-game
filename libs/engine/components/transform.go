@@ -6,8 +6,8 @@ type Transform struct {
 	Rotation      float64
 }
 
-func NewTransform(x, y, width, height, rotation float64) Transform {
-	Transform := Transform{
+func NewTransform(x, y, width, height, rotation float64) *Transform {
+	Transform := &Transform{
 		X: x, Y: y,
 		Width: width, Height: height,
 		Rotation: rotation,

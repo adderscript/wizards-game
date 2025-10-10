@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 	"wizards/libs/engine"
+	"wizards/libs/engine/components"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -12,9 +13,7 @@ import (
 type Staff struct {
 	Tag string
 
-	X, Y          float64
-	Width, Height float64
-	Rotation      float64
+	*components.Transform
 
 	distance         float64
 	offsetX, offsetY float64
@@ -51,8 +50,11 @@ func NewStaff(sceneManager *engine.SceneManager) *Staff {
 	staff := &Staff{
 		Tag: "staff",
 
-		X: player.X, Y: player.Y,
-		Width: 1.0, Height: 1.0,
+		Transform: components.NewTransform(
+			player.X, player.X,
+			1.0, 1.0,
+			0.0,
+		),
 
 		distance: 10.0,
 		offsetX:  0.0, offsetY: 1.0,

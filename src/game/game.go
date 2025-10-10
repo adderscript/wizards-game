@@ -1,4 +1,4 @@
-package src
+package game
 
 import (
 	"wizards/config"
@@ -12,7 +12,7 @@ type Game struct {
 	sceneManager *engine.SceneManager
 }
 
-func NewGame() *Game {
+func New() *Game {
 	sceneManager := engine.NewSceneManager()
 
 	player := entities.NewPlayer(sceneManager, config.ScreenWidth/2, config.ScreenHeight/2)
