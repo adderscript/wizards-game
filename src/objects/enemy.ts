@@ -16,6 +16,14 @@ export function makeEnemy(k: kaplay.KAPLAYCtx): kaplay.GameObj {
 
             damage: 1.0,
             knockbackForce: 1000.0,
+        
+            takeDamage(damage: number, knockbackForce: number, damagerPosition: kaplay.Vec2) {
+                enemy.hurt(damage);
+
+                // apply knockback
+                const dir = enemy.pos.sub(damagerPosition).unit();
+                enemy.applyImpulse(dir.scale(knockbackForce));
+            },
         },
     ]);
  

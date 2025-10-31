@@ -13,6 +13,25 @@ export function makePlayer(k: kaplay.KAPLAYCtx): kaplay.GameObj {
         
         {
             speed: 100000.0,
+
+            invincibilityDelay: 0.5,
+            invincibilityTimer: 0.0,
+
+            takeDamage(damage: number, knockbackForce: number, damagerPosition: kaplay.Vec2) {
+                if (player.invincibilityTimer < player.invincibilityDelay) {
+                    return;
+                }
+
+                player.hurt(damage);
+
+                // apply knockback
+                const dir = player.pos.sub(damagerPosition).unit();
+                player.applyImpulse(dir.scale(knockbackForce));
+                k.shake(2.0);
+
+                // start invincibility
+                player.invincibilityTimer = 0.0;
+            },
         },
     ]);
 
@@ -25,6 +44,11 @@ export function makePlayer(k: kaplay.KAPLAYCtx): kaplay.GameObj {
             player.play("run");
         } else if (!isMoving && currentAnim !== "idle") {
             player.play("idle");
+        }
+
+        // update invincibility timer
+        if (player.invincibilityTimer < player.invincibilityDelay) {
+            player.invincibilityTimer += k.dt();
         }
     });
 
@@ -44,15 +68,6 @@ export function makePlayer(k: kaplay.KAPLAYCtx): kaplay.GameObj {
     player.on("death", () => {
         player.destroy();
     });
-
-    (player as any).takeDamage = (damage: number, knockbackForce: number, damagerPosition: kaplay.Vec2) => {
-        player.hurt(damage);
-
-        // apply knockback
-        const dir = player.pos.sub(damagerPosition).unit();
-        player.applyImpulse(dir.scale(knockbackForce));
-        k.shake(2.0);
-    };
 
     return player;
 }
